@@ -1,4 +1,4 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { dbClient } from '@/lib/supabase';
 import { supabase } from './supabase';
 import { logError } from './error-utils';
 import { isDatabaseInitialized, getDatabaseInitializationError } from './db-init';

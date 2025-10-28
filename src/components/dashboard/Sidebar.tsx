@@ -8,8 +8,7 @@ import {
   BarChart2, Settings, LogOut, Home, Bell
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { createBrowserClient } from '@supabase/ssr';
-import type { RealtimeChannel } from '@supabase/supabase-js';
+import { dbClient } from '@/lib/supabase';
 
 type CounterKey = 'users' | 'tasks' | 'attendance' | 'projects';
 type NavItem = { name: string; href: string; icon: any; counter: CounterKey | null };
@@ -42,10 +41,6 @@ export default function Sidebar() {
     projects: 0,
   });
   const [totalNotifications, setTotalNotifications] = useState(0);
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
   
   // If not authenticated or still loading, don't render the sidebar
   if (!isAuthenticated || isLoading) {

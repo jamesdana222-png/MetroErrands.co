@@ -1,4 +1,4 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { dbClient } from '@/lib/supabase';
 
 // Project service to handle project-related operations
 export const projectService = {

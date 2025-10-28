@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Calendar, Clock, User, Filter, Download, ChevronLeft, ChevronRight, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { attendanceService, userService } from '@/lib/db-service';
 import { AttendanceRecord, User as UserType } from '@/lib/models';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { dbClient } from '@/lib/supabase';
 import DatabaseRequiredFallback from '@/components/DatabaseRequiredFallback';
 
 // Current user ID (would come from authentication in production)
@@ -37,7 +37,6 @@ export default function AttendanceTracking() {
   const [employees, setEmployees] = useState<{id: string, name: string}[]>([]);
   const [activeEmployees, setActiveEmployees] = useState<ActiveEmployee[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const supabase = createClientComponentClient();
 
   // Format date for display
   const formatDate = (dateString: string) => {

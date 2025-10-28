@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { dbClient } from '@/lib/supabase';
 
 export default function DatabaseTestPage() {
   const [testResults, setTestResults] = useState<any>(null);
@@ -15,10 +15,9 @@ export default function DatabaseTestPage() {
     async function testConnection() {
       try {
         setLoading(true);
-        const supabase = createClientComponentClient();
         
         // Test basic connection
-        const { data, error } = await supabase
+        const { data, error } = await dbClient
           .from('users')
           .select('id')
           .limit(1);
@@ -33,7 +32,7 @@ export default function DatabaseTestPage() {
         }
         
         // Get list of tables
-        const { data: tablesData, error: tablesError } = await supabase
+        const { data: tablesData, error: tablesError } = await dbClient
           .from('information_schema.tables')
           .select('table_name')
           .eq('table_schema', 'public');
