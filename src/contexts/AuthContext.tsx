@@ -2,8 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { signIn, signOut, getCurrentUser } from '@/lib/supabase';
-import { supabase } from '@/lib/supabase';
+import { signIn, signOut, getCurrentUser, isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { initDb, isDatabaseInitialized, getDatabaseInitializationError } from '@/lib/db-init';
 
 // Define the shape of our auth context
@@ -174,6 +173,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Login function
   const login = async (email: string, password: string, totpCode?: string) => {
     try {
+      // If Supabase is temporarily disabled, return a friendly error
+      if (!isSupabaseConfigured() || !supabase) {
+        return {
+          success: false,
+          error: 'Authentication is temporarily unavailable while we complete deployment. Please try again later.'
+        };
+      }
       // Validate inputs
       if (!email || !password) {
         return {
@@ -209,8 +215,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         };
       }
       
-      // Check if MFA is required
-      const { data: mfaData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      // Check if MFA is required (guarded)
+      let mfaData: any = null;
+      if (isSupabaseConfigured() && supabase) {
+        const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        mfaData = data;
+      }
       
       // If MFA is required but no TOTP code provided, return early
       if (mfaData && mfaData.currentLevel !== 'aal2' && mfaData.nextLevel === 'aal2' && !totpCode) {
@@ -222,7 +232,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
       
       // If TOTP code is provided, verify it
-      if (totpCode) {
+      if (totpCode && isSupabaseConfigured() && supabase) {
         const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
           factorId: 'totp'
         });
@@ -249,25 +259,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
       
       // Get user role from database
-      const { data: userData, error: roleError } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', data.user.id)
-        .single();
-      
-      if (roleError) {
-        console.error('Error fetching user role:', roleError);
+      let dbRole: string | undefined = undefined;
+      if (isSupabaseConfigured() && supabase) {
+        const { data: userData, error: roleError } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+        
+        if (roleError) {
+          console.error('Error fetching user role:', roleError);
+        }
+        dbRole = userData?.role;
       }
       
       // Check if MFA is enabled for this user
-      const { data: factors } = await supabase.auth.mfa.listFactors();
-      const mfaEnabled = !!factors && Array.isArray(factors.totp) && factors.totp.some(factor => factor.status === 'verified');
+      let mfaEnabled = false;
+      if (isSupabaseConfigured() && supabase) {
+        const { data: factors } = await supabase.auth.mfa.listFactors();
+        mfaEnabled = !!factors && Array.isArray(factors.totp) && factors.totp.some(factor => factor.status === 'verified');
+      }
       
       // Set user data
       const userInfo = {
         id: data.user.id,
         email: data.user.email ?? '',
-        role: userData?.role || data.user.user_metadata?.role || 'customer',
+        role: dbRole || data.user.user_metadata?.role || 'customer',
         mfaEnabled
       };
       
@@ -327,8 +344,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Only check authentication if not on home page
       const isAuthed = isHomePage ? isAuthenticated : await checkAuth();
       
-      // Initialize database if authenticated
-      if (isAuthed) {
+      // Initialize database if authenticated and Supabase is configured
+      if (isAuthed && isSupabaseConfigured()) {
         try {
           await initDb();
           setDbInitialized(true);
@@ -393,9 +410,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return;
       }
       
-      // Check if MFA is enabled for this user
-      const { data: factors } = await supabase.auth.mfa.listFactors();
-      const mfaEnabled = !!factors && Array.isArray(factors.totp) && factors.totp.some(factor => factor.status === 'verified');
+      // Check if MFA is enabled for this user (guarded for disabled Supabase)
+      let mfaEnabled = false;
+      if (isSupabaseConfigured() && supabase) {
+        const { data: factors } = await supabase.auth.mfa.listFactors();
+        mfaEnabled = !!factors && Array.isArray(factors.totp) && factors.totp.some(factor => factor.status === 'verified');
+      }
       
       setUser({
         id: currentUser.id,
