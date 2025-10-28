@@ -27,6 +27,9 @@ const nextConfig = {
       allowedOrigins: ['localhost:3000', 'localhost:3001']
     }
   },
+  // Completely disable static optimization to avoid Supabase errors during build
+  staticPageGenerationTimeout: 0,
+  output: 'standalone',
 };
 
 module.exports = nextConfig;

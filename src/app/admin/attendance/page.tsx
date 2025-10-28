@@ -5,6 +5,7 @@ import { Calendar, Clock, User, Filter, Download, ChevronLeft, ChevronRight, Che
 import { attendanceService, userService } from '@/lib/db-service';
 import { AttendanceRecord, User as UserType } from '@/lib/models';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import DatabaseRequiredFallback from '@/components/DatabaseRequiredFallback';
 
 // Current user ID (would come from authentication in production)
 const CURRENT_USER_ID = '1'; // admin@metro.com
