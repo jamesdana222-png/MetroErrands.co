@@ -14,8 +14,8 @@ export const supabase = {
   ...dbClient
 };
 
-// Export auth functions
-export { signIn, signUp, signOut, getCurrentUser };
+// Export auth functions and clients
+export { authClient, dbClient, signIn, signUp, signOut, getCurrentUser };
 
 // Export utility functions
 export const isSupabaseConfigured = () => {
