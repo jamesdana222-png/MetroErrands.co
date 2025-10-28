@@ -1,4 +1,4 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { authClient, dbClient } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 import { createSuccessResponse, createServerErrorResponse, createUnauthorizedResponse } from '@/lib/api-utils';
@@ -17,10 +17,10 @@ export async function POST(request: NextRequest) {
   const { data: body } = validation;
   
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    // Use our mock auth client instead of createRouteHandlerClient
     
     // Attempt to sign in
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await authClient.auth.signInWithPassword({
       email: body.email,
       password: body.password,
     });
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Get user profile data
-    const { data: userData, error: userError } = await supabase
+    const { data: userData, error: userError } = await dbClient
       .from('users')
       .select('*')
       .eq('id', data.user.id)

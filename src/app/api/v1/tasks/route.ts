@@ -1,4 +1,4 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { authClient } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 import { createSuccessResponse, createServerErrorResponse, createNotFoundResponse } from '@/lib/api-utils';
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 // Get all tasks with optional filtering
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    
     
     // Get query parameters
     const searchParams = request.nextUrl.searchParams;
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const assigneeId = searchParams.get('assigneeId');
     
     // Build query
-    let query = supabase.from('tasks').select('*, project:projectId(*), assignee:assigneeId(id, name, email)');
+    let query = dbClient.from('tasks').select('*, project:projectId(*), assignee:assigneeId(id, name, email)');
     
     // Add filters if provided
     if (status) {
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
   
   try {
     // Create Supabase client
-    const supabase = createRouteHandlerClient({ cookies });
+    
     
     // Verify project exists
     const { data: project, error: projectError } = await supabase

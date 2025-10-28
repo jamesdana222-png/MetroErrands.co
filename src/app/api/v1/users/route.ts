@@ -1,4 +1,4 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { authClient } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 import { createSuccessResponse, createServerErrorResponse, createNotFoundResponse } from '@/lib/api-utils';
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 // Get all users
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    
     
     // Get query parameters
     const searchParams = request.nextUrl.searchParams;
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const role = searchParams.get('role');
     
     // Build query
-    let query = supabase.from('users').select('*');
+    let query = dbClient.from('users').select('*');
     
     // Add filters if provided
     if (role) {
@@ -63,10 +63,10 @@ export async function POST(request: NextRequest) {
   
   try {
     // Create Supabase client
-    const supabase = createRouteHandlerClient({ cookies });
+    
     
     // Create user in Auth
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    const { data: authData, error: authError } = await authClient.admin.createUser({
       email: body.email,
       password: body.password,
       email_confirm: true,
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       console.error('Error inserting user data:', userError);
       
       // Attempt to clean up the auth user if db insert fails
-      await supabase.auth.admin.deleteUser(authData.user.id);
+      await authClient.admin.deleteUser(authData.user.id);
       
       return createServerErrorResponse('Failed to create user profile', userError.message);
     }

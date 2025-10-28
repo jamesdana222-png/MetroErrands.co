@@ -1,4 +1,4 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { authClient } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 import { createSuccessResponse, createServerErrorResponse, createNotFoundResponse } from '@/lib/api-utils';
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 // Get all projects with optional filtering
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    
     
     // Get query parameters
     const searchParams = request.nextUrl.searchParams;
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const managerId = searchParams.get('managerId');
     
     // Build query
-    let query = supabase.from('projects').select('*, manager:managerId(id, name, email)');
+    let query = dbClient.from('projects').select('*, manager:managerId(id, name, email)');
     
     // Add filters if provided
     if (status) {
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
   
   try {
     // Create Supabase client
-    const supabase = createRouteHandlerClient({ cookies });
+    
     
     // Verify manager exists
     const { data: manager, error: managerError } = await supabase

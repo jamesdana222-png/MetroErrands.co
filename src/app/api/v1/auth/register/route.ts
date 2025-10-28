@@ -1,4 +1,4 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { authClient } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 import { createSuccessResponse, createServerErrorResponse, createBadRequestResponse } from '@/lib/api-utils';
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   const { data: body } = validation;
   
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    
     
     // Check if user already exists
     const { data: existingUser } = await supabase
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Create user in auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    const { data: authData, error: authError } = await authClient.signUp({
       email: body.email,
       password: body.password,
       options: {
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       console.error('Error inserting user data:', userError);
       
       // Clean up auth user if user data insertion fails
-      await supabase.auth.admin.deleteUser(authData.user.id);
+      await authClient.admin.deleteUser(authData.user.id);
       
       return createServerErrorResponse('Failed to create user profile', userError.message);
     }
