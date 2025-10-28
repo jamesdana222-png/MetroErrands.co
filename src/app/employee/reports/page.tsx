@@ -2,7 +2,7 @@
 
 import React from "react";
 
-const EmployeeReportsPage: React.FC = () => {
+export default function EmployeeReportsPage() {
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Employee Reports</h1>
@@ -33,6 +33,4 @@ const EmployeeReportsPage: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default EmployeeReportsPage;
+}
