@@ -12,6 +12,7 @@ function createValidationErrorResponse(errors: any, endpoint: string) {
   return Response.json({ success: false, errors, endpoint }, { status: 400 });
 }
 import { validateRequest, userSchema } from '@/lib/validation';
+import { isSupabaseConfigured } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +25,13 @@ export async function POST(request: Request) {
   };
   
   try {
+    // Temporarily block user creation when Supabase is disabled
+    if (!isSupabaseConfigured()) {
+      return NextResponse.json({ 
+        success: false, 
+        message: 'Service temporarily unavailable. User creation requires database access.' 
+      }, { status: 503 });
+    }
     // Parse request body safely
     let requestData;
     try {

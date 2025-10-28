@@ -1,6 +1,7 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { isSupabaseConfigured } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +15,10 @@ export async function GET() {
   };
 
   try {
+    // Temporary: if Supabase is disabled, return empty list to keep app healthy
+    if (!isSupabaseConfigured()) {
+      return NextResponse.json([], { status: 200, headers });
+    }
     // Create Supabase client with error handling
     let supabase;
     try {

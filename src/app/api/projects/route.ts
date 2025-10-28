@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 export async function GET() {
   try {
+    // Temporary: if Supabase is not configured, return empty list to keep build/deploy healthy
+    if (!isSupabaseConfigured() || !supabase) {
+      return NextResponse.json({ success: true, projects: [] });
+    }
     const { data, error } = await supabase
       .from('projects')
       .select('*, project_members(*)');
@@ -30,6 +34,13 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    // Temporary: block writes when Supabase is disabled
+    if (!isSupabaseConfigured() || !supabase) {
+      return NextResponse.json({ 
+        success: false, 
+        message: 'Service temporarily unavailable. Project creation requires database access.'
+      }, { status: 503 });
+    }
     const body = await request.json();
     const { title, description, deadline, priority, team, createdBy } = body;
     

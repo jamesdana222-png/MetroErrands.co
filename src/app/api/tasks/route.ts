@@ -1,11 +1,23 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET() {
   try {
+    // Temporary disabled mode: return empty tasks if DB is not configured
+    if (!isSupabaseConfigured() || !supabase) {
+      return NextResponse.json(
+        { success: true, tasks: [] },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store, max-age=0'
+          }
+        }
+      );
+    }
     const { data, error } = await supabase
       .from('tasks')
       .select('*')
@@ -36,6 +48,10 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    // Block writes while Supabase is disabled
+    if (!isSupabaseConfigured() || !supabase) {
+      return NextResponse.json({ success: false, message: 'Service temporarily unavailable. Task creation requires database access.' }, { status: 503 });
+    }
     const body = await request.json();
     const { title, description, assignedBy, assignedTo, priority, deadline } = body;
     

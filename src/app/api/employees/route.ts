@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 // Function to generate a random password
 function generatePassword() {
@@ -13,6 +13,13 @@ function generatePassword() {
 
 export async function POST(request: Request) {
   try {
+    // Temporarily block employee creation when Supabase is disabled
+    if (!isSupabaseConfigured() || !supabase) {
+      return NextResponse.json({ 
+        success: false, 
+        message: 'Service temporarily unavailable. Employee creation requires database access.' 
+      }, { status: 503 });
+    }
     // Parse the request body safely
     let body;
     try {
@@ -42,16 +49,7 @@ export async function POST(request: Request) {
       });
     }
     
-    // Check if the Supabase client is initialized
-    if (!supabase) {
-      console.error('Supabase client not initialized');
-      return NextResponse.json({ 
-        success: false, 
-        message: 'Database connection error' 
-      }, { 
-        status: 500
-      });
-    }
+    // Supabase is guaranteed configured above
 
     // Check if user with this email already exists
     try {
@@ -240,6 +238,12 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
+    // Temporary: return empty list if Supabase is disabled
+    if (!isSupabaseConfigured() || !supabase) {
+      return new Response(JSON.stringify({ success: true, users: [] }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
     const { data, error } = await supabase
       .from('users')
       .select('*')

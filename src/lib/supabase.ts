@@ -44,24 +44,36 @@ if (!isSupabaseConfigured()) {
 const DEFAULT_TIMEOUT = 10000; // 10 seconds
 const LONG_OPERATION_TIMEOUT = 30000; // 30 seconds
 
-// Create a single supabase client for interacting with your database
-export const supabase = createClient(supabaseUrl, chosenKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-  },
-  global: {
-    headers: {
-      'x-application-name': 'errandsite',
+// Create Supabase client lazily only when configured; otherwise export a non-throwing placeholder
+type SupabaseClientType = ReturnType<typeof createClient>;
+let supabaseInstance: SupabaseClientType | null = null;
+
+function createSupabaseClient(): SupabaseClientType | null {
+  if (!isSupabaseConfigured()) return null;
+  if (supabaseInstance) return supabaseInstance;
+  supabaseInstance = createClient(supabaseUrl, chosenKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
     },
-  },
-  db: {
-    schema: 'public',
-  },
-  realtime: {
-    timeout: DEFAULT_TIMEOUT,
-  },
-});
+    global: {
+      headers: {
+        'x-application-name': 'errandsite',
+      },
+    },
+    db: {
+      schema: 'public',
+    },
+    realtime: {
+      timeout: DEFAULT_TIMEOUT,
+    },
+  });
+  return supabaseInstance;
+}
+
+// Export a value that does NOT throw at import time when envs are missing
+// Note: Callers MUST guard with isSupabaseConfigured() before using.
+export const supabase = createSupabaseClient() as unknown as SupabaseClientType;
 
 // Function to create a timeout promise that rejects after specified milliseconds
 export const createTimeout = (ms: number) => {
@@ -197,6 +209,17 @@ export const signUp = async (email: string, password: string, userData = {}) => 
 
 export const signIn = async (email: string, password: string) => {
   try {
+    // If Supabase is not configured, return a friendly error without throwing
+    if (!isSupabaseConfigured() || !supabase) {
+      return {
+        data: null,
+        error: {
+          message: 'Authentication is temporarily disabled. Please try again later.',
+          status: 503,
+          code: 'AUTH_DISABLED'
+        }
+      };
+    }
     // Validate inputs
     if (!email || !password) {
       return {
@@ -282,6 +305,14 @@ export const getUserRole = async (userId: string): Promise<string> => {
 
 export const signOut = async () => {
   try {
+    // If Supabase is not configured, treat signout as a no-op
+    if (!isSupabaseConfigured() || !supabase) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('supabase.auth.token');
+        localStorage.removeItem('errandsite.user');
+      }
+      return { error: null };
+    }
     // Use real Supabase signout with timeout
     const result = await executeWithTimeout(
       supabase.auth.signOut(),
@@ -314,6 +345,10 @@ export const signOut = async () => {
 
 export const getCurrentUser = async () => {
   try {
+    // If Supabase is not configured, report no active user without throwing
+    if (!isSupabaseConfigured() || !supabase) {
+      return { user: null, error: null };
+    }
     // Use real Supabase session check with timeout
     const { data: sessionData } = await executeWithTimeout(
       supabase.auth.getSession(),
