@@ -363,7 +363,7 @@ export default function Home() {
                     </div>
                     <div>
                       <h4 className="font-medium">Address</h4>
-                      <p className="text-gray-600">261 11th ave, newyor,ny, united states new york</p>
+                      <p className="text-gray-600">261 11th Ave, Newyork, NY, United states New york</p>
                     </div>
                   </div>
                   <div className="flex items-start">
