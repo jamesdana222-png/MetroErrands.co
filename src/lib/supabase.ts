@@ -2,25 +2,42 @@ import { createClient } from '@supabase/supabase-js';
 import { logError, handleError } from './error-utils';
 
 // Initialize the Supabase client with environment variables
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+// Prefer server-side keys when on the server, fall back to public anon key for client usage
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  process.env.SUPABASE_URL ||
+  '';
+
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_ANON_KEY ||
+  '';
+
+// Service role key for privileged server-side operations (never expose to client)
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+// Decide which key to use based on runtime
+// If we're on the server and a service role key is present, use it; otherwise use anon key
+const isServer = typeof window === 'undefined';
+const chosenKey = isServer && supabaseServiceRoleKey ? supabaseServiceRoleKey : supabaseAnonKey;
+
+// Helper to report whether Supabase is configured
+export const isSupabaseConfigured = () => Boolean(supabaseUrl) && Boolean(chosenKey);
 
 // Validate environment variables
-if (!supabaseUrl || !supabaseKey) {
-  const errorMessage = 'Missing Supabase environment variables. Check your .env.local file.';
+if (!isSupabaseConfigured()) {
+  const errorMessage = 'Missing Supabase environment variables. Check your environment (Render dashboard or .env.local).';
   logError({
     message: errorMessage,
     source: 'supabase.ts',
-    context: { 
-      hasUrl: !!supabaseUrl, 
-      hasKey: !!supabaseKey 
-    }
+    context: {
+      hasUrl: !!supabaseUrl,
+      hasAnonKey: !!supabaseAnonKey,
+      hasServiceRoleKey: !!supabaseServiceRoleKey,
+      runtime: isServer ? 'server' : 'client',
+    },
   });
-  
-  // In production, we might want to throw an error to prevent the app from starting
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error(errorMessage);
-  }
+  // Do NOT throw here. Avoid failing Next.js build on platforms where envs are injected at runtime.
 }
 
 // Default timeout values (in milliseconds)
@@ -28,7 +45,7 @@ const DEFAULT_TIMEOUT = 10000; // 10 seconds
 const LONG_OPERATION_TIMEOUT = 30000; // 30 seconds
 
 // Create a single supabase client for interacting with your database
-export const supabase = createClient(supabaseUrl, supabaseKey, {
+export const supabase = createClient(supabaseUrl, chosenKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
