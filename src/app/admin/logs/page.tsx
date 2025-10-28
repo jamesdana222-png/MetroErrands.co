@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Filter, Calendar, Clock, User, FileText } from "lucide-react";
+import { Search, Filter, Calendar, Clock, User, FileText, CheckSquare as CheckSquareIcon, Folder as FolderIcon, File as FileIcon, User as UserIcon, Clock as ClockIcon } from "lucide-react";
 
 // Mock audit log service (would be replaced with actual service)
 const auditLogService = {
@@ -68,7 +68,17 @@ const auditLogService = {
 };
 
 export default function AuditLogs() {
-  const [logs, setLogs] = useState([]);
+  const [logs, setLogs] = useState<{
+    id: string;
+    userId: string;
+    userName: string;
+    action: string;
+    entityType: string;
+    entityId: string;
+    details: string;
+    ipAddress: string;
+    timestamp: string;
+  }[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
@@ -131,61 +141,60 @@ export default function AuditLogs() {
   });
 
   // Helper function to format timestamp
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp);
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);  
     return date.toLocaleString();
   };
 
   // Helper function to get action badge color
-  const getActionColor = (action) => {
+  const getActionColor = (action: string) => {
     switch (action) {
       case 'create':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
       case 'update':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
       case 'delete':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
       case 'login':
       case 'logout':
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300';
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400';
       case 'check_in':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
       case 'check_out':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
   // Helper function to get entity type badge color
-  const getEntityColor = (entityType) => {
+  const getEntityColor = (entityType: string) => {
     switch (entityType) {
       case 'user':
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300';
+        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400';
       case 'attendance':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
       case 'task':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
       case 'project':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
   // Helper function to get icon for entity type
-  const getEntityIcon = (entityType) => {
+  const getEntityIcon = (entityType: string) => {
     switch (entityType) {
       case 'user':
-        return <User className="h-4 w-4" />;
+        return <UserIcon className="h-4 w-4" />;
       case 'attendance':
-        return <Clock className="h-4 w-4" />;
+        return <ClockIcon className="h-4 w-4" />;
       case 'task':
-        return <FileText className="h-4 w-4" />;
+        return <CheckSquareIcon className="h-4 w-4" />;
       case 'project':
-        return <Calendar className="h-4 w-4" />;
+        return <FolderIcon className="h-4 w-4" />;
       default:
-        return <FileText className="h-4 w-4" />;
+        return <FileIcon className="h-4 w-4" />;
     }
   };
 

@@ -12,12 +12,12 @@ const supabase = createClientComponentClient();
 export default function EmployeeAttendance() {
   const { user } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [attendance, setAttendance] = useState([]);
+  const [attendance, setAttendance] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkedIn, setCheckedIn] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
   const [checkInTime, setCheckInTime] = useState('');
-  const [todayAttendance, setTodayAttendance] = useState(null);
+  const [todayAttendance, setTodayAttendance] = useState<any>(null);
   const [checkOutTime, setCheckOutTime] = useState('');
   const [totalHours, setTotalHours] = useState(0);
 
@@ -127,9 +127,9 @@ export default function EmployeeAttendance() {
       
       // Show success message
       alert("Checked in successfully!");
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error checking in:', error);
-      alert('Failed to check in: ' + (error.message || 'Please try again.'));
+      alert('Failed to check in: ' + (error?.message || 'Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -172,9 +172,9 @@ export default function EmployeeAttendance() {
       
       // Show success message
       alert(`Successfully checked out at ${formattedRecord.checkOut}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error checking out:', error);
-      alert('Failed to check out: ' + (error.message || 'Please try again.'));
+      alert('Failed to check out: ' + (error?.message || 'Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -211,7 +211,7 @@ export default function EmployeeAttendance() {
     };
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'present':
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
@@ -224,7 +224,7 @@ export default function EmployeeAttendance() {
     }
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       weekday: 'short',

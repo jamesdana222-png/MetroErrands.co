@@ -8,7 +8,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 
-export default function MfaSetup() {
+interface MfaSetupProps {
+  onComplete?: () => void;
+}
+
+export default function MfaSetup({ onComplete }: MfaSetupProps) {
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [secret, setSecret] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState('');
@@ -56,16 +60,17 @@ export default function MfaSetup() {
       setStatus('loading');
       setMessage('Verifying code...');
 
-      const { error } = await supabase.auth.mfa.challenge({
+      const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
         factorId,
       });
-
-      if (error) {
-        throw error;
+      
+      if (challengeError) {
+        throw challengeError;
       }
 
       const { data, error: verifyError } = await supabase.auth.mfa.verify({
         factorId,
+        challengeId: challengeData.id,
         code: verificationCode,
       });
 
@@ -75,6 +80,14 @@ export default function MfaSetup() {
 
       setStatus('success');
       setMessage('MFA has been successfully set up!');
+      // Notify parent that setup is complete if a callback is provided
+      if (typeof onComplete === 'function') {
+        try {
+          onComplete();
+        } catch (cbErr) {
+          console.error('Error in onComplete callback:', cbErr);
+        }
+      }
     } catch (error) {
       setStatus('error');
       setMessage(error instanceof Error ? error.message : 'Failed to verify MFA code');

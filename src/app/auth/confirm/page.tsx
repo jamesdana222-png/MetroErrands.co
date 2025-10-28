@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 
-export default function EmailConfirmPage() {
+function EmailConfirmContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
@@ -84,5 +84,13 @@ export default function EmailConfirmPage() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+export default function EmailConfirmPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+      <EmailConfirmContent />
+    </Suspense>
   );
 }

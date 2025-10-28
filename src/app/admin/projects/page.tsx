@@ -93,7 +93,7 @@ export default function ProjectsManagement() {
         priority: project.priority,
         deadline: project.deadline,
         assigned_to: project.assigned_to,
-        assigned_to_name: project.users?.name || 'Unknown User',
+        assigned_to_name: project.users && project.users[0]?.name || 'Unknown User',
         created_at: project.created_at,
       }));
       

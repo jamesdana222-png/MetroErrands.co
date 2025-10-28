@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
-export default function MFAVerificationPage() {
+function MFAVerificationContent() {
   const [verificationCode, setVerificationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -103,5 +103,13 @@ export default function MFAVerificationPage() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+export default function MFAVerificationPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading MFA...</div>}>
+      <MFAVerificationContent />
+    </Suspense>
   );
 }

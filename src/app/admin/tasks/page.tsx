@@ -6,7 +6,8 @@ import {
   CheckCircle, AlertCircle, MoreHorizontal, ChevronDown 
 } from 'lucide-react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Database } from '@/lib/database.types';
+// Removed database types import as it's not available
+// import { Database } from '@/lib/database.types';
 import { projectService } from '@/lib/project-service';
 
 type Employee = {
@@ -31,7 +32,7 @@ type Task = {
 };
 
 export default function TaskAssignment() {
-  const supabase = createClientComponentClient<Database>();
+  const supabase = createClientComponentClient();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,7 +90,7 @@ export default function TaskAssignment() {
           `);
           
         // Get user details separately
-        let userMap = {};
+        let userMap: Record<string, any> = {};
         if (!taskError && taskData && taskData.length > 0) {
           const userIds = taskData
             .map(task => task.assigned_to)
@@ -102,7 +103,7 @@ export default function TaskAssignment() {
               .in('id', userIds);
               
             if (usersData) {
-              userMap = usersData.reduce((acc, user) => {
+              userMap = usersData.reduce((acc: Record<string, any>, user: any) => {
                 acc[user.id] = user;
                 return acc;
               }, {});
@@ -215,13 +216,13 @@ export default function TaskAssignment() {
     let color = '';
     let ariaLabel = '';
     
-    switch (priority) {
+    switch (priority.toLowerCase()) {
       case 'high':
         color = 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
         ariaLabel = 'Priority: High';
         break;
       case 'medium':
-        color = 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
+        color = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
         ariaLabel = 'Priority: Medium';
         break;
       case 'low':
@@ -473,14 +474,14 @@ export default function TaskAssignment() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(task.priority)}`}>
-                        {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>
-                        {task.status === 'in_progress' ? 'In Progress' : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
-                      </span>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityBadge(task.priority).color}`} aria-label={getPriorityBadge(task.priority).ariaLabel}>
+                          {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(task.status).color}`} aria-label={getStatusBadge(task.status).ariaLabel}>
+                          {task.status === 'in_progress' ? 'In Progress' : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+                        </span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">

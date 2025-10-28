@@ -54,7 +54,7 @@ export default function AdminDashboard() {
     pendingApprovals: 0
   });
   
-  const [recentActivities, setRecentActivities] = useState([]);
+  const [recentActivities, setRecentActivities] = useState<{id: any; icon: JSX.Element; title: any; description: string; time: string}[]>([]);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
@@ -91,7 +91,7 @@ export default function AdminDashboard() {
       const employees = Array.isArray(users) ? users.filter(user => user.role === 'employee') : [];
       
       // Get all projects with proper error handling
-      let projects = [];
+      let projects: any[] = [];
       try {
         projects = await projectService.getAllProjects();
         if (!Array.isArray(projects)) projects = [];
@@ -118,7 +118,7 @@ export default function AdminDashboard() {
       const lateRecords = todayRecords.filter(record => record.status === 'late');
       
       // Get tasks with proper error handling
-      let allTasks = [];
+      let allTasks: any[] = [];
       try {
         allTasks = await taskService.getAllTasks();
         if (!Array.isArray(allTasks)) allTasks = [];
@@ -142,7 +142,7 @@ export default function AdminDashboard() {
       });
       
       // Get recent activities from audit logs with proper error handling
-      let logs = [];
+      let logs: any[] = [];
       try {
         logs = await auditService.getAllLogs();
         if (!Array.isArray(logs)) logs = [];
@@ -239,13 +239,13 @@ export default function AdminDashboard() {
           title="Total Employees" 
           value={stats.totalEmployees} 
           icon={<Users className="h-8 w-8 text-blue-500" />}
-          trend="+2 this week"
+          trend={{ direction: "up", value: "+2 this week" }}
         />
         <StatCard 
           title="Active Projects" 
           value={stats.activeProjects} 
           icon={<Briefcase className="h-8 w-8 text-green-500" />}
-          trend={`${stats.pendingApprovals} pending approval`}
+          trend={{ direction: "up", value: `${stats.pendingApprovals} pending approval` }}
         />
         <StatCard 
           title="Today's Attendance" 
@@ -257,7 +257,7 @@ export default function AdminDashboard() {
           title="Task Completion" 
           value={stats.completedTasks} 
           icon={<CheckCircle className="h-8 w-8 text-teal-500" />}
-          trend={`${stats.pendingTasks} pending`}
+          trend={{ direction: "neutral", value: `${stats.pendingTasks} pending` }}
         />
       </div>
       
@@ -342,7 +342,7 @@ export default function AdminDashboard() {
 }
 
 // Stat Card Component
-function StatCard({ title, value, icon, trend }) {
+function StatCard({ title, value, icon, trend }: { title: string; value: number | string; icon: JSX.Element; trend: { direction?: string; value: string } | string }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
       <div className="flex justify-between items-start">
@@ -352,7 +352,7 @@ function StatCard({ title, value, icon, trend }) {
           {trend && (
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1" />
-              {trend}
+              {typeof trend === 'string' ? trend : trend.value}
             </p>
           )}
         </div>
@@ -365,7 +365,7 @@ function StatCard({ title, value, icon, trend }) {
 }
 
 // Activity Item Component
-function ActivityItem({ activity }) {
+function ActivityItem({ activity }: { activity: {id: any; icon: JSX.Element; title: any; description: string; time: string} }) {
   return (
     <div className="flex items-start space-x-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition">
       <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900">
@@ -381,7 +381,7 @@ function ActivityItem({ activity }) {
 }
 
 // Performance Bar Component
-function PerformanceBar({ label, value, color }) {
+function PerformanceBar({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div>
       <div className="flex justify-between mb-1">
@@ -399,7 +399,7 @@ function PerformanceBar({ label, value, color }) {
 }
 
 // Quick Action Component
-function QuickAction({ title, icon, onClick }) {
+function QuickAction({ title, icon, onClick }: { title: string; icon: JSX.Element; onClick: () => void }) {
   return (
     <button
       onClick={onClick}

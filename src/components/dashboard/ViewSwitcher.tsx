@@ -9,7 +9,7 @@ type ViewSwitcherProps = {
 };
 
 // Map of related sections between admin and employee views
-const sectionMap = {
+const sectionMap: { admin: Record<string, string>; employee: Record<string, string> } = {
   // Admin sections mapped to employee sections
   admin: {
     'users': 'profile',

@@ -53,9 +53,9 @@ export default function EmployeeTasks() {
         ]);
         
         // Mark newly assigned tasks as notified
-        const unnotifiedTasks = userTasks.filter(task => task.notified === false);
+        const unnotifiedTasks = userTasks.filter((task: any) => task.notified === false);
         if (unnotifiedTasks.length > 0) {
-          const taskIds = unnotifiedTasks.map(task => task.id);
+          const taskIds = unnotifiedTasks.map((task: any) => task.id);
           await supabase
             .from('tasks')
             .update({ notified: true })
@@ -81,7 +81,7 @@ export default function EmployeeTasks() {
         // Format tasks for display
         const formattedTasks: Task[] = [
           // Regular tasks
-          ...userTasks.map(task => ({
+          ...userTasks.map((task: any) => ({
             id: task.id,
             title: task.title,
             description: task.description,
@@ -92,7 +92,7 @@ export default function EmployeeTasks() {
           })),
           
           // Errand requests
-          ...userErrandRequests.map(errand => ({
+          ...userErrandRequests.map((errand: any) => ({
             id: `errand-${errand.id}`,
             title: errand.title,
             description: errand.description,
@@ -107,7 +107,7 @@ export default function EmployeeTasks() {
         setTasks(formattedTasks);
         
         // Subscribe to real-time updates for tasks
-        subscription = await errandService.subscribeToUserRequests(user.id, (payload) => {
+        subscription = await errandService.subscribeToUserRequests(user.id, (payload: any) => {
           if (!payload) return;
           
           const { eventType, new: newRecord, old: oldRecord } = payload;
@@ -179,7 +179,7 @@ export default function EmployeeTasks() {
         await errandService.updateRequest(errandId, { status: errandStatus });
       } else {
         // Handle regular task status update
-        await taskService.updateTaskStatus(taskId, newStatus);
+        await taskService.updateTaskStatus(taskId, user?.id || '', newStatus);
         
         // Update the local state (for regular tasks)
         setTasks(prev => prev.map(task => 
@@ -221,13 +221,15 @@ export default function EmployeeTasks() {
     }
   };
 
-  // Format date for display
-  const formatDate = (dateString: string) => {
+  // Format date for display (handles undefined gracefully)
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'No due date';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    if (isNaN(date.getTime())) return 'Invalid date';
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   };
 

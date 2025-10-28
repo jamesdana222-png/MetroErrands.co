@@ -32,6 +32,7 @@ export default function UserManagement() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
+  const [viewType, setViewType] = useState<'admin' | 'employee'>('admin');
   const isMounted = useRef(true);
   const initialFetchDone = useRef(false);
   const supabase = createClientComponentClient();
@@ -133,17 +134,23 @@ export default function UserManagement() {
         return [];
       }
       
+      // Fetch users data
+      const { data } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
       // Ensure data is an array
       if (!Array.isArray(data)) {
         handleError({ message: 'API returned non-array data' }, { data });
         throw new Error('Server returned invalid data format');
       }
       
-      console.log('Successfully loaded', data.length, 'users');
+      console.log('Successfully loaded', data?.length || 0, 'users');
       
       // Save to state and localStorage
-      setUsers(data);
-      saveUsersToLocalStorage(data);
+      setUsers(data || []);
+      saveUsersToLocalStorage(data || []);
       
     } catch (error: any) {
       console.error('Error fetching users:', error);
@@ -200,10 +207,11 @@ export default function UserManagement() {
         } else {
           throw new Error('No user ID returned from signUp');
         }
-      } catch (authError) {
+      } catch (error) {
+        const authError = error as any;
         console.error('Auth signup error:', authError);
-        toast.error(`Authentication error: ${authError.message}`);
-        throw new Error(`Failed to create user: ${authError.message}`);
+        toast.error(`Authentication error: ${authError?.message || 'Unknown error'}`);
+        throw new Error(`Failed to create user: ${authError?.message || 'Unknown error'}`);
       }
       
       // Create user in the database
@@ -374,7 +382,7 @@ export default function UserManagement() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">User Management</h1>
         <div className="flex space-x-4">
-          <ViewSwitcher currentView={viewMode} onViewChange={setViewMode} />
+          <ViewSwitcher currentView="admin" currentSection="users" />
           <button
             onClick={() => setShowAddModal(true)}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center"

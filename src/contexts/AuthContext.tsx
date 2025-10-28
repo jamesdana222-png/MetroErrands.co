@@ -71,8 +71,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       setUser({
         id: currentUser.id,
-        email: currentUser.email,
-        role: currentUser.role
+        email: currentUser.email ?? '',
+        role: currentUser.role ?? 'employee'
       });
       setIsAuthenticated(true);
       return true;
@@ -213,7 +213,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const { data: mfaData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
       
       // If MFA is required but no TOTP code provided, return early
-      if (mfaData.currentLevel !== 'aal2' && mfaData.nextLevel === 'aal2' && !totpCode) {
+      if (mfaData && mfaData.currentLevel !== 'aal2' && mfaData.nextLevel === 'aal2' && !totpCode) {
         return { 
           success: false,
           requiresMfa: true,
@@ -261,12 +261,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       // Check if MFA is enabled for this user
       const { data: factors } = await supabase.auth.mfa.listFactors();
-      const mfaEnabled = factors.totp.some(factor => factor.status === 'verified');
+      const mfaEnabled = !!factors && Array.isArray(factors.totp) && factors.totp.some(factor => factor.status === 'verified');
       
       // Set user data
       const userInfo = {
         id: data.user.id,
-        email: data.user.email,
+        email: data.user.email ?? '',
         role: userData?.role || data.user.user_metadata?.role || 'customer',
         mfaEnabled
       };
@@ -395,12 +395,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       // Check if MFA is enabled for this user
       const { data: factors } = await supabase.auth.mfa.listFactors();
-      const mfaEnabled = factors.totp.some(factor => factor.status === 'verified');
+      const mfaEnabled = !!factors && Array.isArray(factors.totp) && factors.totp.some(factor => factor.status === 'verified');
       
       setUser({
         id: currentUser.id,
-        email: currentUser.email,
-        role: currentUser.role,
+        email: currentUser.email ?? '',
+        role: currentUser.role ?? 'employee',
         mfaEnabled
       });
       setIsAuthenticated(true);

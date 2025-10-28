@@ -80,19 +80,19 @@ const MOCK_SCHEDULE = [
 ];
 
 // Helper function to group schedule by date
-const groupByDate = (schedule) => {
-  return schedule.reduce((acc, item) => {
+const groupByDate = (schedule: any[]): Record<string, any[]> => {
+  return schedule.reduce((acc: Record<string, any[]>, item: any) => {
     if (!acc[item.date]) {
       acc[item.date] = [];
     }
     acc[item.date].push(item);
     return acc;
-  }, {});
+  }, {} as Record<string, any[]>);
 };
 
 export default function EmployeeSchedule() {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [schedule, setSchedule] = useState({});
+  const [schedule, setSchedule] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -103,7 +103,7 @@ export default function EmployeeSchedule() {
     }, 1000);
   }, []);
 
-  const formatDate = (date) => {
+  const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -112,7 +112,7 @@ export default function EmployeeSchedule() {
     });
   };
 
-  const getDaysInMonth = (year, month) => {
+  const getDaysInMonth = (year: number, month: number) => {
     return new Date(year, month + 1, 0).getDate();
   };
 
@@ -152,7 +152,7 @@ export default function EmployeeSchedule() {
     setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1));
   };
 
-  const selectDay = (dateString) => {
+  const selectDay = (dateString: string | null) => {
     if (dateString) {
       const [year, month, day] = dateString.split('-').map(Number);
       setSelectedDate(new Date(year, month - 1, day));

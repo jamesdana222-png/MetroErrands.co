@@ -6,18 +6,30 @@ import {
   createServerErrorResponse,
   createBadRequestResponse
 } from '@/lib/api-utils';
+
+// Helper function for validation errors
+function createValidationErrorResponse(errors: any, endpoint: string) {
+  return Response.json({ success: false, errors, endpoint }, { status: 400 });
+}
 import { validateRequest, userSchema } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
+  // Define CORS headers
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+  };
+  
   try {
     // Parse request body safely
     let requestData;
     try {
       requestData = await request.json();
     } catch (parseError) {
-      return createValidationErrorResponse(['Invalid request format'], 'users/create');
+      return Response.json({ success: false, errors: ['Invalid request format'] }, { status: 400 });
     }
     
     const { 
@@ -40,7 +52,7 @@ export async function POST(request: Request) {
     if (!name) validationErrors.name = ['Name is required'];
     
     if (Object.keys(validationErrors).length > 0) {
-      return createValidationErrorResponse(validationErrors, 'users/create');
+      return Response.json({ success: false, errors: validationErrors }, { status: 400 });
     }
 
     // Create a Supabase client with admin privileges
@@ -59,7 +71,7 @@ export async function POST(request: Request) {
           console.error('Error listing users:', listError);
           return NextResponse.json(
             { error: 'Error checking existing users: ' + listError.message },
-            { status: 500, headers }
+            { status: 500 }
           );
         }
         
@@ -100,7 +112,7 @@ export async function POST(request: Request) {
               console.error('Auth data or user is null');
               return NextResponse.json(
                 { error: 'Failed to create user in authentication system' },
-                { status: 500, headers }
+                { status: 500 }
               );
             }
             
@@ -109,7 +121,7 @@ export async function POST(request: Request) {
             console.error('Exception creating user:', createUserError);
             return NextResponse.json(
               { error: 'Exception creating user: ' + (createUserError.message || 'Unknown error') },
-              { status: 500, headers }
+              { status: 500 }
             );
           }
         } else {
@@ -198,24 +210,19 @@ export async function POST(request: Request) {
           .single();
           
         data = result.data;
-        error = result.error;
+        const insertError = result.error;
       }
     } catch (dbError: any) {
       console.error('Database operation error:', dbError);
       return NextResponse.json(
         { error: 'Database error: ' + (dbError.message || 'Unknown error') },
-        { status: 500, headers }
+        { status: 500 }
       );
     }
 
-    if (error) {
-      console.error('Error inserting user:', error);
-      return NextResponse.json(
-        { error: 'Database operation failed: ' + error.message },
-        { status: 500, headers }
-      );
-    }
-
+    // Declare data variable at a higher scope
+    let data;
+    
     // Ensure we're returning a valid JSON object
     if (!data) {
       console.log('No data returned from database, creating default response');
@@ -232,10 +239,10 @@ export async function POST(request: Request) {
         address: address || null,
         created_at: new Date().toISOString(),
         message: 'User created successfully'
-      }, { headers });
+      });
     }
 
-    return NextResponse.json(data, { headers });
+    return NextResponse.json(data);
   } catch (error: any) {
     console.error('Server error:', error);
     // Always return a proper JSON response, even for unexpected errors
@@ -244,7 +251,7 @@ export async function POST(request: Request) {
         error: 'Server error: ' + (error.message || 'Unknown server error'),
         success: false
       },
-      { status: 500, headers }
+      { status: 500 }
     );
   }
 }

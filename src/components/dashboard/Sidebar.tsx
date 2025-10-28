@@ -9,9 +9,13 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createBrowserClient } from '@supabase/ssr';
+import type { RealtimeChannel } from '@supabase/supabase-js';
+
+type CounterKey = 'users' | 'tasks' | 'attendance' | 'projects';
+type NavItem = { name: string; href: string; icon: any; counter: CounterKey | null };
 
 // Define admin navigation items with notification counters
-const adminNavItems = [
+const adminNavItems: NavItem[] = [
   { name: 'Dashboard', href: '/admin', icon: Home, counter: null },
   { name: 'User Management', href: '/admin/users', icon: Users, counter: 'users' },
   { name: 'Tasks', href: '/admin/tasks', icon: Briefcase, counter: 'tasks' },
@@ -22,7 +26,7 @@ const adminNavItems = [
 ];
 
 // Define employee navigation items with notification counters
-const employeeNavItems = [
+const employeeNavItems: NavItem[] = [
   { name: 'My Tasks', href: '/employee/tasks', icon: Briefcase, counter: 'tasks' },
   { name: 'Attendance', href: '/employee/attendance', icon: Clock, counter: null },
   { name: 'Profile', href: '/employee/profile', icon: Users, counter: null },
@@ -31,11 +35,11 @@ const employeeNavItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { user, isAuthenticated, logout, isLoading } = useAuth();
-  const [counters, setCounters] = useState({
+  const [counters, setCounters] = useState<Record<CounterKey, number>>({
     users: 0,
     tasks: 0,
     attendance: 0,
-    projects: 0
+    projects: 0,
   });
   const [totalNotifications, setTotalNotifications] = useState(0);
   const supabase = createBrowserClient(
@@ -127,7 +131,7 @@ export default function Sidebar() {
     fetchCounters();
     
     // Set up real-time listeners for updates
-    let tasksChannel;
+    let tasksChannel: RealtimeChannel | null = null;
     
     try {
       tasksChannel = supabase

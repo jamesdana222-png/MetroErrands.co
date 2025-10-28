@@ -30,7 +30,7 @@ export default function MfaVerification({ factorId, onSuccess, onCancel }: MfaVe
       setError(null);
 
       // Challenge the factor first
-      const { error: challengeError } = await supabase.auth.mfa.challenge({
+      const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
         factorId,
       });
 
@@ -39,6 +39,7 @@ export default function MfaVerification({ factorId, onSuccess, onCancel }: MfaVe
       // Verify the code
       const { data, error: verifyError } = await supabase.auth.mfa.verify({
         factorId,
+        challengeId: challengeData.id,
         code: verificationCode,
       });
 

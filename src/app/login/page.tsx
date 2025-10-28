@@ -165,10 +165,10 @@ export default function LoginPage() {
               </CardDescription>
             </CardHeader>
             
-            <form onSubmit={handleLogin}>
+            <form id="login-form" onSubmit={handleLogin}>
               <CardContent className="space-y-5 pt-2">
                 {/* Screen reader announcer for form errors */}
-                <FormErrorAnnouncer errors={errors} />
+                <FormErrorAnnouncer errors={errors} formId="login-form" />
                 
                 {errors._form && (
                   <Alert variant="destructive" className="bg-red-900/50 border-red-800 text-white">

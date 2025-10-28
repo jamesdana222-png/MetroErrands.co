@@ -214,13 +214,18 @@ export default function AttendanceTracking() {
           // Format records to match the expected structure
           const formattedRecords = records.map(record => ({
             id: record.id,
-            user_id: record.user_id,
-            user_name: record.users?.name || 'Unknown User',
-            check_in: record.check_in,
-            check_out: record.check_out,
+            userId: record.user_id,
+            userName: record.users?.name || 'Unknown User',
             date: record.date,
-            total_hours: record.total_hours,
-            status: record.status
+            checkInTime: record.check_in,
+            checkOutTime: record.check_out,
+            totalHours: record.total_hours,
+            status: record.status,
+            notes: '',
+            location: '',
+            ipAddress: '',
+            createdAt: record.created_at || new Date().toISOString(),
+            updatedAt: record.updated_at || new Date().toISOString()
           }));
           
           setAttendanceRecords(formattedRecords);
@@ -259,7 +264,7 @@ export default function AttendanceTracking() {
   // Filter records by selected employee
   const filteredRecords = attendanceRecords.filter(record => {
     if (selectedEmployee === 'all') return true;
-    return record.user_id === selectedEmployee;
+    return record.userId === selectedEmployee;
   });
 
   return (
@@ -402,24 +407,24 @@ export default function AttendanceTracking() {
                             <User className="h-4 w-4" />
                           </div>
                           <div className="ml-3 text-sm font-medium text-gray-900 dark:text-white">
-                            {record.user_name}
+                            {record.userName}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                           <Clock className="h-4 w-4 mr-1 text-green-500 dark:text-green-400" />
-                          {formatTime(record.check_in)}
+                          {formatTime(record.checkInTime)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                           <Clock className="h-4 w-4 mr-1 text-red-500 dark:text-red-400" />
-                          {formatTime(record.check_out)}
+                          {formatTime(record.checkOutTime)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {record.total_hours ? `${record.total_hours.toFixed(2)} hrs` : '—'}
+                        {record.totalHours ? `${record.totalHours.toFixed(2)} hrs` : '—'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(record.status)}`}>

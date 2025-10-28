@@ -16,6 +16,7 @@ export default function MFASetupPage() {
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [secret, setSecret] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState('');
+  const [factorId, setFactorId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +56,7 @@ export default function MFASetupPage() {
           
           setQrCode(data.totp.qr_code);
           setSecret(data.totp.secret);
+          setFactorId(data.id);
         }
       } catch (err) {
         console.error('MFA setup error:', err);
@@ -77,35 +79,33 @@ export default function MFASetupPage() {
         return;
       }
       
-      const { data, error: verifyError } = await supabase.auth.mfa.challenge({
-        factorId: 'totp',
+      if (!factorId) {
+        setError('MFA factor is not initialized. Please refresh and try again.');
+        return;
+      }
+
+      // Initiate challenge for the enrolled factor
+      const { data: challengeData, error: challengeErr } = await supabase.auth.mfa.challenge({
+        factorId
+      });
+      if (challengeErr) {
+        throw challengeErr;
+      }
+
+      // Verify the TOTP code using the challengeId
+      const { data: verifyData, error: verifyErr } = await supabase.auth.mfa.verify({
+        factorId,
+        challengeId: challengeData.id,
         code: verificationCode
       });
-      
-      if (verifyError) {
-        throw verifyError;
+      if (verifyErr) {
+        throw verifyErr;
       }
       
-      const { data: verifyData, error: challengeError } = await supabase.auth.mfa.verify({
-        factorId: 'totp',
-        challengeId: data.id,
-        code: verificationCode
-      });
-      
-      if (challengeError) {
-        throw challengeError;
-      }
-      
-      // Generate recovery codes
-      const { data: recData, error: recError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      
-      if (recError) {
-        throw recError;
-      }
-      
+      // Mark MFA as enabled
       setIsMfaEnabled(true);
-      setShowRecoveryCodes(true);
-      setRecoveryCodes(recData.recovery_codes || []);
+      // Optionally show recovery codes section if implemented in the future
+      // setShowRecoveryCodes(true);
       
       // Update user in context
       await refreshUser();
@@ -201,17 +201,11 @@ export default function MFASetupPage() {
           ) : showRecoveryCodes ? (
             <div className="space-y-4">
               <Alert className="bg-yellow-50 border-yellow-200">
-                <AlertTitle>Save your recovery codes</AlertTitle>
+                <AlertTitle>Recovery codes</AlertTitle>
                 <AlertDescription>
-                  Store these recovery codes in a secure place. They can be used to regain access to your account if you lose your authenticator device.
+                  Recovery codes display is not implemented yet.
                 </AlertDescription>
               </Alert>
-              
-              <div className="bg-gray-50 p-4 rounded-md font-mono text-sm">
-                {recoveryCodes.map((code, index) => (
-                  <div key={index} className="mb-1">{code}</div>
-                ))}
-              </div>
             </div>
           ) : (
             <div className="space-y-6">

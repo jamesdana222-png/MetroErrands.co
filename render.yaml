@@ -8,5 +8,11 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: NEXT_PUBLIC_SITE_URL
+        sync: false
     autoDeploy: true
     healthCheckPath: /

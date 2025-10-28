@@ -58,7 +58,7 @@ function checkDatabaseReady(): ApiResponse<null> {
       success: false,
       error: {
         code: 'DB_NOT_INITIALIZED',
-        message: error || 'Database is not initialized yet',
+        message: String(error || 'Database is not initialized yet'),
       },
     };
   }
@@ -122,7 +122,7 @@ export async function query<T>(
     }
 
     // Execute query with timeout
-    const { data, error } = await executeWithTimeout(
+    const { data, error } = await executeWithTimeout<any>(
       () => (single ? query.single() : query),
       timeout
     );

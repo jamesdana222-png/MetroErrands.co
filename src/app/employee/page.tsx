@@ -14,7 +14,7 @@ export default function EmployeeDashboard() {
     const fetchUserAndErrands = async () => {
       try {
         // Get current user
-        const { data: userData, error: userError } = await getCurrentUser();
+        const { user: userData, error: userError } = await getCurrentUser();
         if (userError) throw userError;
         setUser(userData);
 
@@ -25,7 +25,7 @@ export default function EmployeeDashboard() {
         // Filter errands assigned to this employee
         // In a real app, you would have an employee_id field to filter by
         // For now, we'll show all in_progress errands as if they're assigned to this employee
-        const assignedErrands = errandsData?.filter(errand => 
+        const assignedErrands = errandsData?.filter((errand: any) => 
           errand.status === 'in_progress'
         ) || [];
         

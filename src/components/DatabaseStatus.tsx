@@ -33,7 +33,7 @@ export default function DatabaseStatus() {
           setTableResults(tableTests);
         } else {
           setConnectionStatus('error');
-          setConnectionError(result.error || 'Unknown connection error');
+          setConnectionError(String(result.error || 'Unknown connection error'));
         }
       } catch (error) {
         setConnectionStatus('error');
@@ -159,7 +159,7 @@ export default function DatabaseStatus() {
                   setTableResults(tableTests);
                 } else {
                   setConnectionStatus('error');
-                  setConnectionError(result.error || 'Unknown connection error');
+                  setConnectionError(String(result.error || 'Unknown connection error'));
                 }
               }}
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"

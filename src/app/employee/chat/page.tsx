@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, Send, Phone, Video, MoreVertical, ChevronDown, User, Clock } from 'lucide-react';
+import { Search, Send, Phone, Video, MoreVertical, ChevronDown, User, Clock, MessageSquare } from 'lucide-react';
 
 // Mock data for contacts
 const MOCK_CONTACTS = [
@@ -189,8 +189,8 @@ const MOCK_MESSAGES = {
 };
 
 // Helper function to group messages by date
-const groupMessagesByDate = (messages) => {
-  const groups = {};
+const groupMessagesByDate = (messages: any[]) => {
+  const groups: Record<string, any[]> = {};
   
   messages.forEach(message => {
     const date = new Date(message.timestamp).toLocaleDateString();
@@ -209,11 +209,11 @@ const groupMessagesByDate = (messages) => {
 export default function EmployeeChat() {
   const [contacts, setContacts] = useState(MOCK_CONTACTS);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedContact, setSelectedContact] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [selectedContact, setSelectedContact] = useState<any>(null);
+  const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
-  const messagesEndRef = useRef(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Simulate API call to fetch contacts
@@ -233,13 +233,13 @@ export default function EmployeeChat() {
     }
   }, [messages]);
 
-  const handleSelectContact = (contact) => {
+  const handleSelectContact = (contact: any) => {
     setSelectedContact(contact);
     // Fetch messages for selected contact
-    setMessages(MOCK_MESSAGES[contact.id] || []);
+    setMessages(MOCK_MESSAGES[contact.id as keyof typeof MOCK_MESSAGES] || []);
   };
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!newMessage.trim() || !selectedContact) return;
@@ -275,7 +275,7 @@ export default function EmployeeChat() {
     contact.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const formatMessageTime = (timestamp) => {
+  const formatMessageTime = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };

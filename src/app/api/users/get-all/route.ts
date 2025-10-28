@@ -27,7 +27,7 @@ export async function GET() {
     }
 
     // Initialize empty arrays for users
-    let authUsers = { users: [] };
+    let authUsers: any = { users: [] };
     let dbUsers: any[] = [];
 
     // Get users from auth.users table with explicit error handling
@@ -39,7 +39,7 @@ export async function GET() {
         return NextResponse.json({ 
           error: 'Failed to fetch authentication users', 
           details: error.message 
-        }, { status: 500, headers });
+        }, { status: 500 });
       }
       
       if (data) {
