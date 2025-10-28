@@ -54,6 +54,7 @@
     "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.5.1",
     "babel-jest": "^29.7.0",
+    "cypress": "^15.5.0",
     "eslint": "^8.56.0",
     "glob": "^10.3.10",
     "identity-obj-proxy": "^3.0.0",
